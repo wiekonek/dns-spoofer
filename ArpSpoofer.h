@@ -5,7 +5,7 @@
 #ifndef DNS_SPOOFER_ARPSPOOFER_H
 #define DNS_SPOOFER_ARPSPOOFER_H
 
-#include <libnet.h>
+
 #include "consts.h"
 
 

