@@ -1,7 +1,3 @@
-//
-// Created by wiekonek on 15.06.17.
-//
-
 #ifndef DNS_SPOOFER_ARPSPOOFER_H
 #define DNS_SPOOFER_ARPSPOOFER_H
 

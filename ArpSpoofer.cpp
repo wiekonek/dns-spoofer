@@ -1,13 +1,6 @@
-//
-// Created by wiekonek on 15.06.17.
-//
-
 #include "ArpSpoofer.h"
-#include <arpa/inet.h>
 #include <linux/filter.h>
 #include <linux/if_ether.h>
-#include <sys/ioctl.h>
-#include <pcap.h>
 #include <iostream>
 #include <linux/if_packet.h>
 
