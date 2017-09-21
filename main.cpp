@@ -5,11 +5,12 @@
 
 int main() {
     if(fork()){
-        auto arpSpoofer = new ArpSpoofer();
-        arpSpoofer->start_spoofing("wlo1", "", "");
-    } else {
         DnsSpoofer *dnsSpoofer = new DnsSpoofer();
-        dnsSpoofer->start_spoofing("wlo1");
+        dnsSpoofer->start_spoofing("wlan0");
+        cout << "Stoped" << endl;
+    } else {
+//        auto arpSpoofer = new ArpSpoofer();
+//        arpSpoofer->start_spoofing("wlo1", "", "");
     }
 
 
