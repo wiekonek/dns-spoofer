@@ -1,4 +1,8 @@
 #include <netinet/in.h>
+#include <linux/if_ether.h>
+#include <iostream>
+#include <udns.h>
+#include <libnet.h>
 #include "DnsSpoofer.h"
 
 
@@ -31,14 +35,15 @@ void DnsSpoofer::start_spoofing(char *device) {
 }
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
-    struct ethhdr * ethernetHeader = (struct ethhdr *) bytes;
-//    uint16_t eth_type = ntohs(ethernetHeader->h_proto);
-//    struct iphdr *iph = (struct iphdr*)(bytes + sizeof(struct ethhdr));
-//    cout << iph->protocol << endl;
-    for(int i = 1; i<h->len; i++){
-        if('a' <= i && i <= 'z'){
-            cout << (char)bytes[i];
-        }
-    }
-    cout << endl <<  "======" << endl;
+    unsigned char *dns = (unsigned char *)(bytes + sizeof(struct ethhdr) + sizeof(struct iphdr) + sizeof(struct libnet_udp_hdr));
+
+    printf("========= DNS =========\n");
+    printf("Transaction ID: 0x%04x\n", dns_qid(dns));
+    printf("Questions: %i\n", dns_numqd(dns));
+    printf("Answer RRs: %i\n", dns_numan(dns));
+    printf("Authority RRs: %i\n", dns_numns(dns));
+    printf("Additional RRs: %i\n", dns_numar(dns));
+
+    cout << "data: " << dns_payload(dns) << endl;
+    cout << "=======================" << endl << endl;
 }
