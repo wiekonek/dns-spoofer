@@ -59,7 +59,9 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
 
     //TODO: Move this to program config or args
     vector<string> spoof_target;
-    spoof_target.emplace_back("wiekon", "com", "pl");
+    spoof_target.emplace_back("wiekon");
+    spoof_target.emplace_back("com");
+    spoof_target.emplace_back("pl");
 
     auto incoming_ethernet_header = (struct ethhdr *) bytes;
     auto incoming_ip_header = (struct iphdr*)(bytes + sizeof(struct ethhdr));
