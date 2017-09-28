@@ -77,7 +77,7 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
     printf("response/request 0x%02x\n", dns_qr(incoming_dns_header));
 
 
-    cout << (dns_qr(incoming_dns_header ) > 0 ? "[REQ]" : "[RES]") << " id: 0x"<< std::hex << dns_qid(incoming_dns_header ) << ", query: ";
+    cout << (dns_qr(incoming_dns_header ) > 0 ? "[RES]" : "[REQ]") << " id: 0x"<< std::hex << dns_qid(incoming_dns_header ) << ", query: ";
     auto domain_name_segments = get_domain_name(dns_payload(incoming_dns_header ));
     for(auto & segment: domain_name_segments) {
         cout << segment << ".";
