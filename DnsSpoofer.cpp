@@ -68,13 +68,13 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
     auto incoming_udp_header = (struct libnet_udp_hdr*)(bytes + sizeof(struct ethhdr)+ sizeof(struct iphdr));
     auto incoming_dns_header = (unsigned char *)(bytes + sizeof(struct ethhdr) + sizeof(struct iphdr) + sizeof(struct libnet_udp_hdr));
 
-    printf("========= DNS =========\n");
-    printf("Transaction ID: 0x%04x\n", dns_qid(incoming_dns_header));
-    printf("Questions: %i\n", dns_numqd(incoming_dns_header));
-    printf("Answer RRs: %i\n", dns_numan(incoming_dns_header));
-    printf("Authority RRs: %i\n", dns_numns(incoming_dns_header));
-    printf("Additional RRs: %i\n", dns_numar(incoming_dns_header));
-    printf("response/request 0x%02x\n", dns_qr(incoming_dns_header));
+//    printf("========= DNS =========\n");
+//    printf("Transaction ID: 0x%04x\n", dns_qid(incoming_dns_header));
+//    printf("Questions: %i\n", dns_numqd(incoming_dns_header));
+//    printf("Answer RRs: %i\n", dns_numan(incoming_dns_header));
+//    printf("Authority RRs: %i\n", dns_numns(incoming_dns_header));
+//    printf("Additional RRs: %i\n", dns_numar(incoming_dns_header));
+//    printf("response/request 0x%02x\n", dns_qr(incoming_dns_header));
 
 
     cout << (dns_qr(incoming_dns_header ) > 0 ? "[RES]" : "[REQ]") << " id: 0x"<< std::hex << dns_qid(incoming_dns_header ) << ", query: ";

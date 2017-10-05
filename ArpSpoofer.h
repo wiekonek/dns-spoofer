@@ -8,10 +8,6 @@
 #define ARP_ETHER_TYPE 0x0806
 
 struct arphdr_ex {
-    u_int16_t ftype;
-    u_int16_t ptype;
-    u_int8_t flen;
-    u_int8_t plen;
     u_int16_t option;
     uint8_t sender_mac[6];
     uint8_t sender_ip[4];
@@ -22,7 +18,7 @@ struct arphdr_ex {
 class ArpSpoofer {
 public:
     ArpSpoofer();
-    void start_spoofing(char* interface, char* target_host, char* remote_host);
+    void start_spoofing(char* interface, uint8_t* gateway);
 
 private:
     const char *getArpOption(const uint16_t optionCode);
