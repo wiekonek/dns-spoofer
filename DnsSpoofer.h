@@ -20,7 +20,7 @@ using std::vector;
 class DnsSpoofer {
 public:
     DnsSpoofer();
-    void start_spoofing(char* device);
+    void start_spoofing(char *device, const vector<std::string> &inputDomain);
 private:
     char *_errbuf;
 };

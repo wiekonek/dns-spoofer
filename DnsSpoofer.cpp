@@ -11,11 +11,13 @@ using std::for_each;
 using std::string;
 
 DnsSpoofer::DnsSpoofer() = default;
+vector<std::string> domain;
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes);
 vector<string> get_domain_name(const unsigned char *query_payload);
 
-void DnsSpoofer::start_spoofing(char *device) {
+void DnsSpoofer::start_spoofing(char *device, const vector<std::string> &inputDomain) {
+    domain = inputDomain;
     struct bpf_program fp{};
     bpf_u_int32 netp, maskp;
     _errbuf = (char*)malloc(PCAP_ERRBUF_SIZE);
@@ -57,11 +59,11 @@ vector<string> get_domain_name(const unsigned char *query_payload) {
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
 
+    cout << "xD" << endl;
     //TODO: Move this to program config or args
+//    vector<string> spoof_target = domain;
+//    cout << spoof_target[0] << endl;
     vector<string> spoof_target;
-    spoof_target.emplace_back("wiekon");
-    spoof_target.emplace_back("com");
-    spoof_target.emplace_back("pl");
 
     auto incoming_ethernet_header = (struct ethhdr *) bytes;
     auto incoming_ip_header = (struct iphdr*)(bytes + sizeof(struct ethhdr));

