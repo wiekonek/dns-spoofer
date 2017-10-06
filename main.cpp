@@ -21,9 +21,9 @@ int main(int argc, char * argv[]) {
         cout << "Using default: dns_spoofer wiekon.com.pl yafud.pl_ip" << endl;
     }
 
-//    cout << argv[1] << endl; //domain
-//    cout << argv[2] << endl; //ip
-    const vector<string> &domain = get_domain_name(argv[2]);
+
+    const vector<string> &domain = get_domain_name(argv[1]);
+    uint8_t *redirect_ip = getIpFromString(argv[2]);
 
 
     GatewayInfo* gatewayInfo = new GatewayInfo();
@@ -32,10 +32,10 @@ int main(int argc, char * argv[]) {
 
     if(fork()){
         DnsSpoofer *dnsSpoofer = new DnsSpoofer();
-        dnsSpoofer->start_spoofing(const_cast<char *>(interface), domain);
+        dnsSpoofer->start_spoofing(const_cast<char *>(interface), domain, redirect_ip);
     } else {
-//        auto arpSpoofer = new ArpSpoofer();
-//        arpSpoofer->start_spoofing(const_cast<char *>(interface), gateway);
+        auto arpSpoofer = new ArpSpoofer();
+        arpSpoofer->start_spoofing(const_cast<char *>(interface), gateway);
     }
 
     return 0;
